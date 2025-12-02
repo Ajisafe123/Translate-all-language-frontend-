@@ -39,7 +39,9 @@
               <input type="checkbox" class="w-3.5 h-3.5 rounded bg-white/10 accent-teal-400" />
               <span class="ml-2">Remember me</span>
             </label>
-            <button class="text-teal-400 hover:text-teal-300 transition-colors">Forgot password?</button>
+            <router-link to="/forgot-password" class="text-emerald-400 hover:text-emerald-300 font-semibold transition">
+              Forgot password?
+            </router-link>
           </div>
 
           <button @click="handleLogin" :disabled="isLoading"
@@ -82,7 +84,9 @@
 
 <script setup>
 import { ref, h } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -103,8 +107,21 @@ const handleLogin = () => {
   isLoading.value = true
   setTimeout(() => {
     isLoading.value = false
+    
+    // Save user data to localStorage
+    const userData = {
+      email: email.value,
+      username: email.value.split('@')[0],
+      loginTime: new Date().toISOString()
+    }
+    localStorage.setItem('currentUser', JSON.stringify(userData))
+    
     errorMessage.value = 'Welcome back! Redirecting...'
-    setTimeout(() => errorMessage.value = '', 4000)
+    setTimeout(() => {
+      errorMessage.value = ''
+      // Redirect to translate page
+      router.push('/translate')
+    }, 1500)
   }, 2500)
 }
 

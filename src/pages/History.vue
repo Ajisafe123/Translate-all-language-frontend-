@@ -1,335 +1,346 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+  <div class="min-h-screen bg-black text-white">
     <!-- Navbar -->
-    <nav class="bg-white dark:bg-slate-800 shadow-lg border-b border-slate-200 dark:border-slate-700">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center space-x-2 cursor-pointer" @click="$router.push('/translate')">
-            <div class="bg-linear-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M9 19h.01"></path>
-              </svg>
-            </div>
-            <h1 class="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TranslateApp
-            </h1>
-          </div>
+    <Navbar @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
-          <div class="flex items-center space-x-4">
-            <!-- Back to Translate Button -->
-            <button
-              @click="$router.push('/translate')"
-              class="px-4 py-2 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 font-semibold rounded-lg transition-colors"
-            >
-              ← Back to Translate
-            </button>
+    <!-- Sidebar -->
+    <Sidebar :isOpen="sidebarOpen" @close="sidebarOpen = false" />
 
-            <!-- Dark Mode Toggle -->
-            <button
-              @click="toggleDarkMode"
-              class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-yellow-400 transition-colors"
-              :title="isDarkMode ? 'Light mode' : 'Dark mode'"
-            >
-              <svg v-if="!isDarkMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-              </svg>
-              <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707zm5.414 5.172l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 111.414-1.414zM5 8a1 1 0 100-2H4a1 1 0 000 2h1z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
-
-            <!-- Menu Dropdown -->
-            <div class="relative">
-              <button
-                @click="menuOpen = !menuOpen"
-                class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-              </button>
-              
-              <!-- Dropdown Menu -->
-              <div
-                v-if="menuOpen"
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-slate-200 dark:border-slate-600 py-2 z-50"
-                @click="menuOpen = false"
-              >
-                <button
-                  @click="handleLogout"
-                  class="w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-600 flex items-center space-x-2 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
-                  <span>Logout</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <!-- Header -->
-      <div class="mb-12">
-        <h2 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-          Translation History
+    <!-- Main History Interface -->
+    <main class="max-w-6xl mx-auto px-6 py-12">
+      <div class="text-center mb-12">
+        <h2 class="text-5xl md:text-4xl font-bold mb-4">
+          <span
+            class="bg-linear-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
+          >
+            Translation History
+          </span>
         </h2>
-        <p class="text-slate-600 dark:text-slate-300">
-          View all your past translations
-        </p>
-      </div>
-
-      <!-- History Content -->
-      <div v-if="history.length > 0" class="grid gap-6">
-        <!-- Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <p class="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Translations</p>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ history.length }}</p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-6 border-l-4 border-green-500">
-            <p class="text-slate-600 dark:text-slate-400 text-sm font-medium">Languages Used</p>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ uniqueLanguages }}</p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-6 border-l-4 border-purple-500">
-            <p class="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Characters</p>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ totalCharacters }}</p>
-          </div>
-        </div>
-
-        <!-- Search and Filter -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-4 mb-6">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search translations..."
-            class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
-          />
-        </div>
-
-        <!-- History List -->
-        <div class="space-y-4">
-          <div
-            v-for="(item, index) in filteredHistory"
-            :key="index"
-            class="bg-white dark:bg-slate-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
-          >
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <p class="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                  {{ getLanguageName(item.sourceLanguage) }} → {{ getLanguageName(item.targetLanguage) }}
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                  {{ formatDate(item.timestamp) }}
-                </p>
-              </div>
-              <button
-                @click="removeFromHistory(index)"
-                class="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-              >
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Source -->
-              <div>
-                <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Source</label>
-                <p class="mt-2 p-3 bg-slate-50 dark:bg-slate-700 rounded text-slate-900 dark:text-white text-sm leading-relaxed break-words">
-                  {{ item.sourceText }}
-                </p>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.sourceText.length }} characters</p>
-              </div>
-
-              <!-- Target -->
-              <div>
-                <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Translation</label>
-                <p class="mt-2 p-3 bg-slate-50 dark:bg-slate-700 rounded text-slate-900 dark:text-white text-sm leading-relaxed break-words">
-                  {{ item.translatedText }}
-                </p>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.translatedText.length }} characters</p>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="mt-4 flex space-x-2">
-              <button
-                @click="copyToClipboard(item.sourceText)"
-                class="flex-1 px-3 py-2 text-sm bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 rounded font-medium transition-colors"
-              >
-                Copy Source
-              </button>
-              <button
-                @click="copyToClipboard(item.translatedText)"
-                class="flex-1 px-3 py-2 text-sm bg-green-50 dark:bg-slate-700 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-slate-600 rounded font-medium transition-colors"
-              >
-                Copy Translation
-              </button>
-              <button
-                @click="useTranslation(item)"
-                class="flex-1 px-3 py-2 text-sm bg-purple-50 dark:bg-slate-700 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-slate-600 rounded font-medium transition-colors"
-              >
-                Use Again
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Clear History -->
-        <div class="mt-8 text-center">
-          <button
-            @click="clearHistory"
-            class="px-6 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg font-semibold transition-colors"
-          >
-            Clear All History
-          </button>
-        </div>
+        <p class="text-white/60 text-lg">Your recent translations</p>
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-16">
-        <div class="text-slate-400 dark:text-slate-500 mb-4">
-          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m0 0h6"></path>
+      <div
+        v-if="history.length === 0"
+        class="flex flex-col items-center justify-center py-24"
+      >
+        <div
+          class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-6"
+        >
+          <svg
+            class="w-10 h-10 text-white/40"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
           </svg>
         </div>
-        <h3 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">No translations yet</h3>
-        <p class="text-slate-600 dark:text-slate-400 mb-6">Start translating to see your history here</p>
+        <p class="text-white/60 text-xl mb-6">No translation history yet</p>
         <button
           @click="$router.push('/translate')"
-          class="px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-shadow"
+          class="px-8 py-3 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 rounded-xl font-bold shadow-2xl transition-all"
         >
           Start Translating
         </button>
       </div>
+
+      <!-- History List -->
+      <div v-else class="space-y-4">
+        <!-- Search & Filter -->
+        <div class="mb-8">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search history..."
+            class="w-full px-6 py-3 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-white placeholder-white/40"
+          />
+        </div>
+
+        <!-- History Items -->
+        <div
+          v-for="(item, index) in filteredHistory"
+          :key="index"
+          class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 hover:bg-white/10 transition-all cursor-pointer group"
+          @click="reuseTranslation(item)"
+        >
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center"
+              >
+                <svg
+                  class="w-5 h-5 text-emerald-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 16V4m0 0L3 8m4-4l4 4h16v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h16a2 2 0 012 2v12a2 2 0 01-2 2H7z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-white/70 text-sm">
+                  {{ getLanguageName(item.sourceLanguage) }} →
+                  {{ getLanguageName(item.targetLanguage) }}
+                </p>
+                <p class="text-white/40 text-xs">
+                  {{ formatDate(item.timestamp) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Delete Button -->
+            <button
+              @click.stop="deleteHistory(index)"
+              class="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Source & Target Text -->
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <p class="text-white/40 text-xs mb-2 uppercase tracking-wide">
+                From
+              </p>
+              <p class="text-white/80 wrap-break-word line-clamp-2">
+                {{ item.sourceText }}
+              </p>
+            </div>
+            <div>
+              <p class="text-white/40 text-xs mb-2 uppercase tracking-wide">
+                To
+              </p>
+              <p class="text-emerald-300 wrap-break-word line-clamp-2">
+                {{ item.translatedText }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Copy Button -->
+          <div class="flex gap-3">
+            <button
+              @click.stop="copyToClipboard(item.translatedText)"
+              class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/70 text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                ></path>
+              </svg>
+              Copy
+            </button>
+            <button
+              @click.stop="reuseTranslation(item)"
+              class="flex-1 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg text-emerald-300 text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+              </svg>
+              Reuse
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
+
+    <!-- Toast -->
+    <Transition name="toast">
+      <div v-if="toastMessage" class="fixed top-6 right-6 z-50">
+        <div
+          class="px-6 py-4 bg-emerald-500/20 backdrop-blur-xl border border-emerald-500/50 rounded-xl shadow-2xl flex items-center gap-3 font-medium text-emerald-200"
+        >
+          <span>✓</span>
+          {{ toastMessage }}
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import Navbar from "@/components/Navbar.vue";
+import Sidebar from "@/components/Sidebar.vue";
 
-const router = useRouter()
-const history = ref([])
-const searchQuery = ref('')
-const menuOpen = ref(false)
-const isDarkMode = ref(false)
+const router = useRouter();
+const sidebarOpen = ref(false);
+const history = ref([]);
+const searchQuery = ref("");
+const toastMessage = ref("");
 
+// Language names mapping
 const languageNames = {
-  en: 'English',
-  es: 'Spanish',
-  fr: 'French',
-  de: 'German',
-  it: 'Italian',
-  pt: 'Portuguese',
-  ja: 'Japanese',
-  zh: 'Chinese'
-}
+  auto: "Auto",
+  en: "English",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  ru: "Russian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic",
+  hi: "Hindi",
+  nl: "Dutch",
+  sv: "Swedish",
+  tr: "Turkish",
+  pl: "Polish",
+};
 
+// Check authentication
 onMounted(() => {
-  const user = localStorage.getItem('currentUser')
+  const user = localStorage.getItem("currentUser");
   if (!user) {
-    router.push('/login')
-    return
+    router.push("/login");
   }
 
-  const savedHistory = localStorage.getItem('translationHistory')
+  // Load history
+  const savedHistory = localStorage.getItem("translationHistory");
   if (savedHistory) {
-    history.value = JSON.parse(savedHistory).map(item => ({
-      ...item,
-      timestamp: item.timestamp || new Date().toISOString()
-    }))
+    history.value = JSON.parse(savedHistory);
   }
+});
 
-  const darkMode = localStorage.getItem('darkMode')
-  if (darkMode) {
-    isDarkMode.value = JSON.parse(darkMode)
-    updateDarkMode()
-  }
-})
-
+// Computed filtered history
 const filteredHistory = computed(() => {
-  if (!searchQuery.value) return history.value
-  const query = searchQuery.value.toLowerCase()
-  return history.value.filter(item =>
-    item.sourceText.toLowerCase().includes(query) ||
-    item.translatedText.toLowerCase().includes(query)
-  )
-})
+  if (!searchQuery.value) return history.value;
 
-const uniqueLanguages = computed(() => {
-  const languages = new Set()
-  history.value.forEach(item => {
-    languages.add(item.sourceLanguage)
-    languages.add(item.targetLanguage)
-  })
-  return languages.size
-})
+  return history.value.filter(
+    (item) =>
+      item.sourceText.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      item.translatedText
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase())
+  );
+});
 
-const totalCharacters = computed(() => {
-  return history.value.reduce((total, item) => total + item.sourceText.length, 0)
-})
-
+// Get language name
 const getLanguageName = (code) => {
-  return languageNames[code] || code
-}
+  return languageNames[code] || code;
+};
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// Format date
+const formatDate = (timestamp) => {
+  const date = new Date(timestamp);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-const removeFromHistory = (index) => {
-  history.value.splice(index, 1)
-  localStorage.setItem('translationHistory', JSON.stringify(history.value))
-}
-
-const clearHistory = () => {
-  if (confirm('Are you sure you want to clear all history?')) {
-    history.value = []
-    localStorage.removeItem('translationHistory')
-  }
-}
-
-const copyToClipboard = (text) => {
-  navigator.clipboard.writeText(text)
-}
-
-const useTranslation = (item) => {
-  localStorage.setItem('translationData', JSON.stringify(item))
-  router.push('/translate')
-}
-
-const handleLogout = () => {
-  localStorage.removeItem('currentUser')
-  router.push('/login')
-}
-
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  localStorage.setItem('darkMode', JSON.stringify(isDarkMode.value))
-  updateDarkMode()
-}
-
-const updateDarkMode = () => {
-  const html = document.documentElement
-  if (isDarkMode.value) {
-    html.classList.add('dark')
+  if (date.toDateString() === today.toDateString()) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return "Yesterday";
   } else {
-    html.classList.remove('dark')
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+};
+
+// Copy to clipboard
+const copyToClipboard = (text) => {
+  navigator.clipboard.writeText(text);
+  toastMessage.value = "Copied!";
+  setTimeout(() => (toastMessage.value = ""), 2000);
+};
+
+// Reuse translation
+const reuseTranslation = (item) => {
+  localStorage.setItem(
+    "reuseTranslation",
+    JSON.stringify({
+      sourceText: item.sourceText,
+      sourceLanguage: item.sourceLanguage,
+      targetLanguage: item.targetLanguage,
+    })
+  );
+  router.push("/translate");
+};
+
+// Delete history entry
+const deleteHistory = (index) => {
+  history.value.splice(index, 1);
+  localStorage.setItem("translationHistory", JSON.stringify(history.value));
+  toastMessage.value = "Translation removed";
+  setTimeout(() => (toastMessage.value = ""), 2000);
+};
+</script>
+
+<style scoped>
+.toast-enter-active {
+  animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast-leave-active {
+  animation: toastOut 0.4s ease forwards;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
-</script>
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

@@ -1,25 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted } from "vue";
+import { useTheme } from "@/composables/useTheme";
 
-const isDarkMode = ref(false)
+const { initTheme } = useTheme();
 
 onMounted(() => {
-  // Check dark mode
-  const darkMode = localStorage.getItem('darkMode')
-  if (darkMode) {
-    isDarkMode.value = JSON.parse(darkMode)
-    updateDarkMode()
-  }
-})
-
-const updateDarkMode = () => {
-  const html = document.documentElement
-  if (isDarkMode.value) {
-    html.classList.add('dark')
-  } else {
-    html.classList.remove('dark')
-  }
-}
+  initTheme();
+});
 </script>
 
 <template>
@@ -27,5 +14,5 @@ const updateDarkMode = () => {
 </template>
 
 <style>
-@import './assets/main.css';
+@import "./assets/main.css";
 </style>
