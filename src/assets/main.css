@@ -1,6 +1,93 @@
 @import "tailwindcss";
 
 /* ————————————————————————————————————— */
+/* LIGHT MODE STYLES */
+/* ————————————————————————————————————— */
+
+:root {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+html:not(.dark) body {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+html:not(.dark) .bg-black {
+  background-color: #ffffff;
+}
+
+html:not(.dark) .text-white {
+  color: #000000;
+}
+
+html:not(.dark) .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+html:not(.dark) .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .text-white\/60 {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html:not(.dark) .text-white\/50 {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .text-white\/30 {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+html:not(.dark) .placeholder-white\/50::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .hover\:bg-white\/15:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .hover\:bg-white\/20:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+html:not(.dark) .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+html:not(.dark) .border-emerald-500\/30 {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+html:not(.dark) .text-emerald-300 {
+  color: #059669;
+}
+
+html:not(.dark) .text-emerald-400 {
+  color: #10b981;
+}
+
+/* ————————————————————————————————————— */
 /* ENHANCED GLASS MORPHISM & UTILITIES */
 /* ————————————————————————————————————— */
 

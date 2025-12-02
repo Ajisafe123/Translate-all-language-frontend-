@@ -425,6 +425,12 @@ const onSystemThemeChange = () => {
   }
 };
 
+const applyThemeMode = (mode) => {
+  settings.value.themeMode = mode;
+  const isDark = mode === "dark";
+  setTheme(isDark);
+};
+
 const saveSettings = () => {
   // Save to localStorage
   localStorage.setItem("userSettings", JSON.stringify(settings.value));

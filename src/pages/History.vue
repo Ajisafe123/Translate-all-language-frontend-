@@ -204,12 +204,14 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import Navbar from "@/components/Navbar.vue";
 import Sidebar from "@/components/Sidebar.vue";
+import apiService from "@/services/api";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
 const history = ref([]);
 const searchQuery = ref("");
 const toastMessage = ref("");
+const isLoading = ref(false);
 
 // Language names mapping
 const languageNames = {
@@ -232,17 +234,34 @@ const languageNames = {
   pl: "Polish",
 };
 
-// Check authentication
-onMounted(() => {
+// Check authentication and load history
+onMounted(async () => {
   const user = localStorage.getItem("currentUser");
   if (!user) {
     router.push("/login");
+    return;
   }
 
-  // Load history
-  const savedHistory = localStorage.getItem("translationHistory");
-  if (savedHistory) {
-    history.value = JSON.parse(savedHistory);
+  isLoading.value = true;
+  try {
+    const response = await apiService.getTranslationHistory(100);
+    if (response.translations && Array.isArray(response.translations)) {
+      history.value = response.translations.map(item => ({
+        sourceText: item.sourceText,
+        translatedText: item.translatedText,
+        sourceLanguage: item.sourceLang,
+        targetLanguage: item.targetLang,
+        timestamp: item.createdAt
+      }));
+    }
+  } catch (error) {
+    console.error("Failed to load history:", error);
+    const savedHistory = localStorage.getItem("translationHistory");
+    if (savedHistory) {
+      history.value = JSON.parse(savedHistory);
+    }
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -305,8 +324,15 @@ const reuseTranslation = (item) => {
 };
 
 // Delete history entry
-const deleteHistory = (index) => {
+const deleteHistory = async (index) => {
   history.value.splice(index, 1);
+  
+  try {
+    await apiService.clearTranslationHistory();
+  } catch (error) {
+    console.error("Failed to clear history on backend:", error);
+  }
+  
   localStorage.setItem("translationHistory", JSON.stringify(history.value));
   toastMessage.value = "Translation removed";
   setTimeout(() => (toastMessage.value = ""), 2000);

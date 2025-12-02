@@ -8,7 +8,7 @@ export function useTheme() {
     const saved = localStorage.getItem("userSettings");
     const useSystemTheme = localStorage.getItem("useSystemTheme");
 
-    if (saved && useSystemTheme === "false") {
+    if (useSystemTheme === "false" && saved) {
       const settings = JSON.parse(saved);
       if ("themeMode" in settings) {
         // Manual theme preference exists
@@ -18,7 +18,7 @@ export function useTheme() {
       }
     }
 
-    // Check system preference if no manual setting
+    // Check system preference (default behavior)
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;

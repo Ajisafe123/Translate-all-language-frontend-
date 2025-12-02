@@ -92,22 +92,47 @@
 
         <div class="flex justify-between items-center mt-3 text-xs md:text-sm">
           <span class="text-white/50">{{ sourceText.length }} / 5000</span>
-          <button
-            v-if="sourceText"
-            @click="sourceText = ''"
-            class="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
-          >
-            <svg
-              class="w-4 h-4 sm:w-5 sm:h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+          <div class="flex gap-2">
+            <button
+              @click="toggleVoiceRecording"
+              :class="[
+                'p-1.5 sm:p-2 rounded-lg transition',
+                isRecording
+                  ? 'bg-red-500/30 hover:bg-red-500/50 border border-red-500/60'
+                  : 'bg-white/10 hover:bg-white/20',
+              ]"
+              title="Record audio"
             >
-              <path
-                fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              />
-            </svg>
-          </button>
+              <svg
+                class="w-4 h-4 sm:w-5 sm:h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 7a1 1 0 11-2 0 1 1 0 012 0z"
+                />
+                <path
+                  d="M10 12a2 2 0 100-4 2 2 0 000 4zM.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            </button>
+            <button
+              v-if="sourceText"
+              @click="sourceText = ''"
+              class="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
+            >
+              <svg
+                class="w-4 h-4 sm:w-5 sm:h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -195,6 +220,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import Navbar from "@/components/Navbar.vue";
 import Sidebar from "@/components/Sidebar.vue";
+import apiService from "@/services/api";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
@@ -205,6 +231,9 @@ const sourceLang = ref("auto");
 const targetLang = ref("es");
 const isTranslating = ref(false);
 const toastMessage = ref("");
+const isRecording = ref(false);
+let mediaRecorder = null;
+let audioChunks = [];
 
 const languages = {
   auto: "Detect Language",
@@ -249,12 +278,28 @@ const autoTranslate = () => {
   }
 };
 
-const translateNow = () => {
+const translateNow = async () => {
   if (!sourceText.value.trim()) return;
   isTranslating.value = true;
   translatedText.value = "";
 
-  setTimeout(() => {
+  try {
+    const response = await apiService.translate(
+      sourceText.value,
+      sourceLang.value,
+      targetLang.value
+    );
+
+    if (response.translatedText) {
+      translatedText.value = response.translatedText;
+      saveToHistory();
+    } else if (response.error) {
+      toastMessage.value = "Translation failed";
+      setTimeout(() => (toastMessage.value = ""), 2000);
+    }
+  } catch (error) {
+    console.error("Translation error:", error);
+    // Fallback to mock translation if API is not available
     const mock = {
       es: "¡Hola! Texto traducido al instante.",
       fr: "Bonjour ! Texte traduit instantanément.",
@@ -264,9 +309,10 @@ const translateNow = () => {
     translatedText.value =
       mock[targetLang.value] ||
       `[${languages[targetLang.value]}] ${sourceText.value}`;
-    isTranslating.value = false;
     saveToHistory();
-  }, 800);
+  } finally {
+    isTranslating.value = false;
+  }
 };
 
 const swapLanguages = () => {
@@ -278,7 +324,7 @@ const swapLanguages = () => {
   }
 };
 
-const saveToHistory = () => {
+const saveToHistory = async () => {
   const entry = {
     sourceText: sourceText.value,
     translatedText: translatedText.value,
@@ -286,6 +332,8 @@ const saveToHistory = () => {
     targetLanguage: targetLang.value,
     timestamp: new Date().toISOString(),
   };
+  
+  // Save to localStorage
   const history = JSON.parse(
     localStorage.getItem("translationHistory") || "[]"
   );
@@ -294,6 +342,9 @@ const saveToHistory = () => {
     "translationHistory",
     JSON.stringify(history.slice(0, 100))
   );
+  
+  // Note: The backend automatically saves translations via the /api/translate endpoint
+  // which is called in translateNow(), so no additional API call needed here
 };
 
 const copyToClipboard = (text) => {
@@ -306,6 +357,65 @@ const speak = (text) => {
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = targetLang.value;
   speechSynthesis.speak(utter);
+};
+
+const toggleVoiceRecording = async () => {
+  if (isRecording.value) {
+    // Stop recording
+    mediaRecorder.stop();
+    isRecording.value = false;
+  } else {
+    // Start recording
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        // Send to backend for speech-to-text
+        processVoiceInput(audioBlob);
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      isRecording.value = true;
+      toastMessage.value = "Recording...";
+      setTimeout(() => (toastMessage.value = ""), 1000);
+    } catch (error) {
+      console.error("Microphone access denied:", error);
+      toastMessage.value = "Microphone access denied";
+      setTimeout(() => (toastMessage.value = ""), 2000);
+    }
+  }
+};
+
+const processVoiceInput = async (audioBlob) => {
+  try {
+    const response = await apiService.speechToText(
+      audioBlob,
+      sourceLang.value === "auto" ? "en" : sourceLang.value
+    );
+
+    if (response.text) {
+      sourceText.value += (sourceText.value ? " " : "") + response.text;
+      autoTranslate();
+      toastMessage.value = "Voice converted to text";
+      setTimeout(() => (toastMessage.value = ""), 2000);
+    } else {
+      toastMessage.value = "Failed to process voice";
+      setTimeout(() => (toastMessage.value = ""), 2000);
+    }
+  } catch (error) {
+    console.error("Voice processing error:", error);
+    toastMessage.value = "Connection error";
+    setTimeout(() => (toastMessage.value = ""), 2000);
+  }
 };
 </script>
 

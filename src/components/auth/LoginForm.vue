@@ -85,6 +85,7 @@
 <script setup>
 import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
+import apiService from '@/services/api'
 
 const router = useRouter()
 const email = ref('')
@@ -93,7 +94,7 @@ const showPassword = ref(false)
 const errorMessage = ref('')
 const isLoading = ref(false)
 
-const handleLogin = () => {
+const handleLogin = async () => {
   errorMessage.value = ''
   if (!email.value || !password.value) {
     errorMessage.value = 'Please fill in all fields'
@@ -105,24 +106,34 @@ const handleLogin = () => {
   }
 
   isLoading.value = true
-  setTimeout(() => {
-    isLoading.value = false
+  try {
+    const response = await apiService.login(email.value, password.value)
     
-    // Save user data to localStorage
-    const userData = {
-      email: email.value,
-      username: email.value.split('@')[0],
-      loginTime: new Date().toISOString()
+    if (response.success || response.token) {
+      // Save user data to localStorage
+      const userData = {
+        id: response.user?.id,
+        email: response.user?.email || email.value,
+        username: response.user?.username || email.value.split('@')[0],
+        fullName: response.user?.fullName,
+        loginTime: new Date().toISOString()
+      }
+      localStorage.setItem('currentUser', JSON.stringify(userData))
+      
+      errorMessage.value = 'Welcome back! Redirecting...'
+      setTimeout(() => {
+        errorMessage.value = ''
+        router.push('/translate')
+      }, 1500)
+    } else {
+      errorMessage.value = response.message || 'Login failed. Please try again.'
     }
-    localStorage.setItem('currentUser', JSON.stringify(userData))
-    
-    errorMessage.value = 'Welcome back! Redirecting...'
-    setTimeout(() => {
-      errorMessage.value = ''
-      // Redirect to translate page
-      router.push('/translate')
-    }, 1500)
-  }, 2500)
+  } catch (error) {
+    console.error('Login error:', error)
+    errorMessage.value = error.message || 'Connection error. Please try again.'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const EyeIcon = () => h('svg', { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", 'stroke-width': "2", 'stroke-linecap': "round", 'stroke-linejoin': "round" }, [

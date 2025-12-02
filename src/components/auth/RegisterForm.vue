@@ -95,6 +95,7 @@
 <script setup>
 import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
+import apiService from '@/services/api'
 
 const router = useRouter()
 const email = ref('')
@@ -105,7 +106,7 @@ const showConfirmPassword = ref(false)
 const toastMessage = ref('')
 const isLoading = ref(false)
 
-const handleSignup = () => {
+const handleSignup = async () => {
   toastMessage.value = ''
 
   if (!email.value || !password.value || !confirmPassword.value) {
@@ -121,24 +122,27 @@ const handleSignup = () => {
     return toastMessage.value = 'Passwords do not match'
   }
 
-  const users = JSON.parse(localStorage.getItem('users') || '[]')
-  if (users.some(u => u.email === email.value)) {
-    return toastMessage.value = 'This email is already registered'
-  }
-
-  users.push({
-    id: Date.now().toString(),
-    email: email.value,
-    password: password.value
-  })
-  localStorage.setItem('users', JSON.stringify(users))
-
   isLoading.value = true
-  setTimeout(() => {
+  try {
+    const response = await apiService.register(
+      email.value,
+      email.value.split('@')[0],
+      password.value,
+      email.value.split('@')[0]
+    )
+
+    if (response.success || response.token) {
+      toastMessage.value = 'Account created successfully!'
+      setTimeout(() => router.push('/login'), 1800)
+    } else {
+      toastMessage.value = response.message || 'Signup failed. Please try again.'
+    }
+  } catch (error) {
+    console.error('Signup error:', error)
+    toastMessage.value = error.message || 'Connection error. Please try again.'
+  } finally {
     isLoading.value = false
-    toastMessage.value = 'Account created successfully!'
-    setTimeout(() => router.push('/login'), 1800)
-  }, 2000)
+  }
 }
 
 const EyeIcon = () => h('svg', { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", 'stroke-width': "2", 'stroke-linecap': "round", 'stroke-linejoin': "round" }, [
